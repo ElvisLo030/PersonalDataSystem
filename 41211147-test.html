@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人資料表單</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>個人資料表單</h2>
+    <form id="user-form">
+        <div class="form-group">
+            <label for="name">姓名:</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="請輸入姓名">
+        </div>
+        <div class="form-group">
+            <label for="student-id">學號:</label>
+            <input type="text" class="form-control" id="student-id" name="student-id" placeholder="請輸入學號">
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-3">
+                <label>生日:</label>
+                <select class="form-control" id="birthdate-year" name="birthdate-year" placeholder="YYYY">
+                    <!-- 這裡將會填入由 JavaScript 動態生成的選項，已經寫好 -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label>&nbsp;</label>
+                <select class="form-control" id="birthdate-month" name="birthdate-month">
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <option value="03">03</option>
+                    <option value="04">04</option>
+                    <option value="05">05</option>
+                    <option value="06">06</option>
+                    <option value="07">07</option>
+                    <option value="08">08</option>
+                    <option value="09">09</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label>&nbsp;</label>
+                <select class="form-control" id="birthdate-day" name="birthdate-day" placeholder="DD">
+                    <!-- 這裡將會填入由 JavaScript 動態生成的選項，要請你寫 -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="birth-time">出生時間:</label>
+                <input type="time" class="form-control" id="birth-time" name="birth-time">
+            </div>
+        </div>
+        <!--1. 請將縣市、鄉鎮的下拉式選單，放在同一列中-->
+            <div class="form-group">
+                <label for="city">縣市:</label>
+                <select class="form-control" id="city" name="city">
+                    <!-- 這裡將會填入由 JavaScript 動態生成的選項 -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="town">鄉鎮:</label>
+                <select class="form-control" id="town" name="town">
+                    <!-- 這裡將會填入由 JavaScript 動態生成的選項 -->
+                </select>
+            </div>
+        
+        <div class="form-group">
+            <label for="goal">追求目標:</label>
+            <textarea class="form-control" id="goal" name="goal" rows="3" placeholder="請輸入追求目標"></textarea>
+        </div>
+        <button type="button" onclick="submitForm()" class="btn btn-primary">提交</button>
+    </form>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    
+    $(document).ready(function () {
+        // 2. 請參考之前作業做法，將 cities.json 城市資料填入下拉式選單中。
+        //這裡寫你的程式碼
+
+        // 3. 根據已經選擇的城市，填入該城市的towns.json鄉鎮資料到下拉式選單中。
+        $('#city').change(function () {
+        //這裡寫你的程式碼
+        });
+     });
+
+     //4. 將使用者輸入的資料，儲存到資料庫中。請用 user_data.sql 中的表格結構，資料庫名稱為 middb
+     function submitForm() {
+        //這裡寫你的程式碼
+
+     }
+
+     //加入過去30年的資料到下拉式選單中 
+      var byear = document.getElementById("birthdate-year");
+      var currentYear = new Date().getFullYear();
+      
+      for (var i = 0; i <= 30; i++) {
+        var age = currentYear - i;
+        var option = document.createElement("option");
+        option.text = age;
+        option.value = age;
+        byear.add(option);
+      }
+
+      //5. 請模仿年的作法，添加 1 到 31 的選項到下拉式選單中
+      //這裡寫你的程式碼
+      
+
+
+    
+</script>
+
+</body>
+</html>

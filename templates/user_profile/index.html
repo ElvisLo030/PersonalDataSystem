@@ -1,0 +1,339 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人資料表單</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>個人資料表單</h2>
+    <form id="user-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="name">姓名:</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="請輸入姓名">
+        </div>
+        <div class="form-group">
+            <label for="student-id">學號:</label>
+            <input type="text" class="form-control" id="student-id" name="student-id" placeholder="請輸入學號">
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-3">
+                <label>生日:</label>
+                <select class="form-control" id="birthdate-year" name="birthdate-year" placeholder="YYYY">
+                    <!-- 這裡將會填入由 JavaScript 動態生成的選項 -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label>&nbsp;</label>
+                <select class="form-control" id="birthdate-month" name="birthdate-month">
+                    <option value="">請選擇月份</option>
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <option value="03">03</option>
+                    <option value="04">04</option>
+                    <option value="05">05</option>
+                    <option value="06">06</option>
+                    <option value="07">07</option>
+                    <option value="08">08</option>
+                    <option value="09">09</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label>&nbsp;</label>
+                <select class="form-control" id="birthdate-day" name="birthdate-day" placeholder="DD">
+                    <!-- 這裡將會填入由 JavaScript 動態生成的選項 -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="birth-time">出生時間:</label>
+                <input type="time" class="form-control" id="birth-time" name="birth-time">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="city">縣市:</label>
+                <select class="form-control" id="city" name="city">
+                    <!-- 這裡將會填入由 JavaScript 動態生成的選項 -->
+                </select>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="town">鄉鎮:</label>
+                <select class="form-control" id="town" name="town">
+                    <!-- 這裡將會填入由 JavaScript 動態生成的選項 -->
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="goal">追求目標:</label>
+            <textarea class="form-control" id="goal" name="goal" rows="3" placeholder="請輸入追求目標"></textarea>
+        </div>
+        <div class="btn-group">
+            <button type="button" id="submit-btn" class="btn btn-primary mr-2">提交</button>
+            <button type="button" id="clear-btn" class="btn btn-secondary">清除</button>
+        </div>
+    </form>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- 直接嵌入JavaScript -->
+<script>
+$(document).ready(function () {
+    // 載入城市資料
+    $.ajax({
+        url: '/api/cities/',
+        type: 'GET',
+        success: function(data) {
+            let citySelect = $('#city');
+            citySelect.empty();
+            citySelect.append('<option value="">請選擇縣市</option>');
+            
+            $.each(data, function(id, name) {
+                citySelect.append(`<option value="${id}">${name}</option>`);
+            });
+            
+            // 設置預設城市為台北市 (ID: 1)
+            citySelect.val('1');
+            
+            // 觸發change事件，加載台北市的鄉鎮區域
+            citySelect.trigger('change');
+        },
+        error: function(error) {
+            console.error('載入城市資料失敗:', error);
+        }
+    });
+
+    // 城市改變時載入鄉鎮資料
+    $('#city').change(function() {
+        let cityId = $(this).val();
+        if (!cityId) return;
+        
+        $.ajax({
+            url: `/api/towns/${cityId}/`,
+            type: 'GET',
+            success: function(data) {
+                let townSelect = $('#town');
+                townSelect.empty();
+                townSelect.append('<option value="">請選擇鄉鎮</option>');
+                
+                $.each(data.towns, function(index, name) {
+                    townSelect.append(`<option value="${name}">${name}</option>`);
+                });
+            },
+            error: function(error) {
+                console.error('載入鄉鎮資料失敗:', error);
+            }
+        });
+    });
+
+    // 添加生日年份選項
+    let byear = document.getElementById("birthdate-year");
+    let currentYear = new Date().getFullYear();
+    
+    // 添加空白選項
+    let emptyOption = document.createElement("option");
+    emptyOption.text = "請選擇年份";
+    emptyOption.value = "";
+    byear.add(emptyOption);
+    
+    for (let i = 0; i <= 30; i++) {
+        let year = currentYear - i;
+        let option = document.createElement("option");
+        option.text = year;
+        option.value = year;
+        byear.add(option);
+    }
+
+    // 添加生日日期選項
+    let bday = document.getElementById("birthdate-day");
+    
+    // 添加空白選項
+    let emptyDayOption = document.createElement("option");
+    emptyDayOption.text = "請選擇日期";
+    emptyDayOption.value = "";
+    bday.add(emptyDayOption);
+    
+    for (let i = 1; i <= 31; i++) {
+        let day = i < 10 ? '0' + i : '' + i;
+        let option = document.createElement("option");
+        option.text = day;
+        option.value = day;
+        bday.add(option);
+    }
+
+    // 清除表單欄位的錯誤樣式
+    function clearErrors() {
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+    }
+
+    // 顯示表單欄位的錯誤信息
+    function showError(fieldId, errorMsg) {
+        const field = $(`#${fieldId}`);
+        field.addClass('is-invalid');
+        if (field.next('.invalid-feedback').length === 0) {
+            field.after(`<div class="invalid-feedback">${errorMsg}</div>`);
+        }
+    }
+
+    // 表單提交
+    $('#submit-btn').click(function() {
+        // 清除先前的錯誤提示
+        clearErrors();
+        
+        // 獲取CSRF令牌
+        let csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+        
+        // 收集表單數據
+        let formData = {
+            name: $('#name').val(),
+            student_id: $('#student-id').val(),
+            birthdate_year: $('#birthdate-year').val(),
+            birthdate_month: $('#birthdate-month').val(),
+            birthdate_day: $('#birthdate-day').val(),
+            birth_time: $('#birth-time').val(),
+            city: $('#city').val(),
+            town: $('#town').val(),
+            goal: $('#goal').val()
+        };
+        
+        // 檢查必填欄位
+        let hasError = false;
+        if (!formData.name) {
+            showError('name', '請輸入姓名');
+            hasError = true;
+        }
+        if (!formData.student_id) {
+            showError('student-id', '請輸入學號');
+            hasError = true;
+        }
+        if (!formData.birthdate_year) {
+            showError('birthdate-year', '請選擇出生年份');
+            hasError = true;
+        }
+        if (!formData.birthdate_month) {
+            showError('birthdate-month', '請選擇出生月份');
+            hasError = true;
+        }
+        if (!formData.birthdate_day) {
+            showError('birthdate-day', '請選擇出生日期');
+            hasError = true;
+        }
+        if (!formData.city) {
+            showError('city', '請選擇縣市');
+            hasError = true;
+        }
+        if (!formData.town) {
+            showError('town', '請選擇鄉鎮');
+            hasError = true;
+        }
+        
+        if (hasError) {
+            return;
+        }
+        
+        // 提交資料
+        $.ajax({
+            url: '/api/submit/',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    // 重置表單
+                    $('#user-form')[0].reset();
+                    clearErrors();
+                    
+                    // 重設預設城市為台北市
+                    $('#city').val('1').trigger('change');
+                } else {
+                    if (response.errors) {
+                        // 顯示各字段的錯誤信息
+                        for (const field in response.errors) {
+                            let fieldId = field;
+                            // 將Django表單字段名轉換為HTML元素ID
+                            if (field === 'birthdate_year') fieldId = 'birthdate-year';
+                            if (field === 'birthdate_month') fieldId = 'birthdate-month';
+                            if (field === 'birthdate_day') fieldId = 'birthdate-day';
+                            if (field === 'birth_time') fieldId = 'birth-time';
+                            if (field === 'student_id') fieldId = 'student-id';
+                            
+                            const errorMsg = Array.isArray(response.errors[field]) ? 
+                                response.errors[field][0] : response.errors[field];
+                            showError(fieldId, errorMsg);
+                        }
+                    } else {
+                        alert(response.message || '提交失敗，請檢查表單資料');
+                    }
+                }
+            },
+            error: function(xhr) {
+                console.error('提交資料失敗:', xhr);
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        // 顯示後端返回的錯誤信息
+                        for (const field in response.errors) {
+                            let fieldId = field;
+                            if (field === 'birthdate_year') fieldId = 'birthdate-year';
+                            if (field === 'birthdate_month') fieldId = 'birthdate-month';
+                            if (field === 'birthdate_day') fieldId = 'birthdate-day';
+                            if (field === 'birth_time') fieldId = 'birth-time';
+                            if (field === 'student_id') fieldId = 'student-id';
+                            
+                            const errorMsg = Array.isArray(response.errors[field]) ? 
+                                response.errors[field][0] : response.errors[field];
+                            showError(fieldId, errorMsg);
+                        }
+                        
+                        // 如果是學號重複錯誤，額外顯示提示
+                        if (response.errors.student_id && response.errors.student_id.includes('學號重複無法儲存')) {
+                            alert('學號重複無法儲存');
+                        }
+                    } else if (response.message) {
+                        alert(response.message);
+                        // 特別檢查是否為學號重複錯誤
+                        if (response.message.includes('學號重複')) {
+                            showError('student-id', '學號重複無法儲存');
+                        }
+                    } else {
+                        alert('提交資料失敗，請稍後再試');
+                    }
+                } catch (e) {
+                    alert('提交資料失敗，請稍後再試');
+                }
+            }
+        });
+    });
+
+    // 添加清除按鈕的處理函數
+    $('#clear-btn').click(function() {
+        // 重置表單
+        $('#user-form')[0].reset();
+        clearErrors();
+        
+        // 重設預設城市為台北市
+        $('#city').val('1').trigger('change');
+    });
+});
+</script>
+
+</body>
+</html> 
